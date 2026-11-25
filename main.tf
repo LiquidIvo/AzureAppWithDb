@@ -14,6 +14,8 @@ terraform {
   }
 }
 
+
+
 provider "azurerm" {
   resource_provider_registrations = "legacy"
   features {}
