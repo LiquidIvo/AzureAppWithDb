@@ -74,6 +74,8 @@ resource "azurerm_mssql_database" "db" {
 
 
 
+
+
 resource "azurerm_mssql_firewall_rule" "firewall" {
   name             = var.firewall_rule_name
   server_id        = azurerm_mssql_server.sql.id
