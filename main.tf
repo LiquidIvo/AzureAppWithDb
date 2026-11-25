@@ -72,12 +72,14 @@ resource "azurerm_mssql_database" "db" {
   zone_redundant = false
 }
 
+
+
 resource "azurerm_mssql_firewall_rule" "firewall" {
   name             = var.firewall_rule_name
   server_id        = azurerm_mssql_server.sql.id
   start_ip_address = "0.0.0.0"
   end_ip_address   = "0.0.0.0"
-  
+
 }
 
 resource "azurerm_app_service_source_control" "sourcecontrol" {
