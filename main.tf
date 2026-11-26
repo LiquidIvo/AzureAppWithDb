@@ -8,26 +8,29 @@ terraform {
 
   backend "azurerm" {
     resource_group_name  = "StorageRG"
-    storage_account_name = "taskboardstorage"
+    storage_account_name = "taskboardstorage" 
     container_name       = "taskboardcontainer"
     key                  = "terraform.tfstate"
   }
 }
 
-
-
 provider "azurerm" {
-  resource_provider_registrations = "legacy"
   features {}
+  resource_provider_registrations = "legacy"
+}
+
+resource "random_integer" "ri" {
+  min = 10000
+  max = 99999
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
+  name     = "${var.resource_group_name}-${random_integer.ri.result}"
   location = var.resource_group_location
 }
 
 resource "azurerm_service_plan" "appserviceplan" {
-  name                = var.app_service_plan_name
+  name                = "${var.app_service_plan_name}-${random_integer.ri.result}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Linux"
@@ -35,14 +38,14 @@ resource "azurerm_service_plan" "appserviceplan" {
 }
 
 resource "azurerm_linux_web_app" "app" {
-  name                = var.app_service_name
+  name                = "${var.app_service_name}-${random_integer.ri.result}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   service_plan_id     = azurerm_service_plan.appserviceplan.id
 
   site_config {
     application_stack {
-      dotnet_version = "8.0"
+      dotnet_version = "6.0"
     }
     always_on = false
   }
@@ -55,7 +58,7 @@ resource "azurerm_linux_web_app" "app" {
 }
 
 resource "azurerm_mssql_server" "sql" {
-  name                         = var.sql_server_name
+  name                         = "${var.sql_server_name}-${random_integer.ri.result}"
   resource_group_name          = azurerm_resource_group.rg.name
   location                     = azurerm_resource_group.rg.location
   version                      = "12.0"
@@ -64,24 +67,21 @@ resource "azurerm_mssql_server" "sql" {
 }
 
 resource "azurerm_mssql_database" "db" {
-  name           = var.sql_database_name
-  server_id      = azurerm_mssql_server.sql.id
-  collation      = "SQL_Latin1_General_CP1_CI_AS"
-  license_type   = "LicenseIncluded"
-  sku_name       = "S0"
-  zone_redundant = false
+  name                 = "${var.sql_database_name}${random_integer.ri.result}"
+  server_id            = azurerm_mssql_server.sql.id
+  collation            = "SQL_Latin1_General_CP1_CI_AS"
+  max_size_gb          = 2
+  license_type         = "LicenseIncluded"
+  sku_name             = "S0"
+  zone_redundant       = false
+  storage_account_type = "Local"
 }
-
-
-
-
 
 resource "azurerm_mssql_firewall_rule" "firewall" {
   name             = var.firewall_rule_name
   server_id        = azurerm_mssql_server.sql.id
   start_ip_address = "0.0.0.0"
   end_ip_address   = "0.0.0.0"
-
 }
 
 resource "azurerm_app_service_source_control" "sourcecontrol" {
