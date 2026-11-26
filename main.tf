@@ -24,6 +24,9 @@ resource "random_integer" "ri" {
   max = 99999
 }
 
+
+
+
 resource "azurerm_resource_group" "rg" {
   name     = "${var.resource_group_name}-${random_integer.ri.result}"
   location = var.resource_group_location
